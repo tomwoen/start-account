@@ -1,5 +1,6 @@
 package com.qa.service;
 
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -12,6 +13,7 @@ import java.util.List;
 import com.qa.domain.Account;
 import com.qa.util.JSONUtil;
 
+@Default
 @Transactional(SUPPORTS)
 public class DatabaseService {
 	
