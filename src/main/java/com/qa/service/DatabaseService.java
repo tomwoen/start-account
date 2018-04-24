@@ -1,11 +1,14 @@
 package com.qa.service;
 
-import java.util.List;
-
+import javax.inject.Inject;
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import static javax.transaction.Transactional.TxType.REQUIRED;
 import static javax.transaction.Transactional.TxType.SUPPORTS;
+
+import java.util.Collection;
+import java.util.List;
+
 import com.qa.domain.Account;
 import com.qa.util.JSONUtil;
 
@@ -14,12 +17,16 @@ public class DatabaseService {
 	
 	@PersistenceContext(unitName = "primary")
 	private EntityManager em;
+	
+	@Inject
+	JSONUtil jUtil;
 
-	public List <Account> getAllAccounts() { 
+	public String getAllAccounts() { 
 		
-		TypedQuery<Account> query = em.createQuery("SELECT a FROM ACCOUNT a", Account.class);
-		
-		return query.getResultList();
+		Query query = em.createQuery("SELECT a FROM ACCOUNT a", Account.class);
+		Collection<Account> account = (Collection<Account>) query.getResultList();
+		String result = jUtil.getJSONForObject(account);
+		return result;
 	}
 	
 	public Account findAccount(String accountNumber) {
@@ -28,18 +35,16 @@ public class DatabaseService {
 	}
 	
 	@Transactional(REQUIRED)
-	public Account getAccount (Account account) {
+	public String getAccount (Account account) {
 		
 		em.persist(account);
 		
-		return account;
+		return "{\"message\"; \"account successfully added\"}";
 		
 	}
 	
 	@Transactional(REQUIRED)
-	public Account updateAccount (String accountNumber, String NewJSON) {
-		
-		JSONUtil jUtil = new JSONUtil();	
+	public String updateAccount (String accountNumber, String NewJSON) {
 		
 		em.getTransaction().begin();
 		Account oldrecord = em.find(Account.class, accountNumber);
@@ -51,17 +56,21 @@ public class DatabaseService {
 		}
 		em.getTransaction().commit();
 		
-		return newrecord;		
+		return "{\"message\"; \"account successfully updated\"}";		
 		
 	}
 	
 	@Transactional(REQUIRED)
-	public void deleteAccount(Account account) {
+	public String deleteAccount(Account account) {
 		
 		em.getTransaction().begin();
 		em.remove(account);
 		em.getTransaction().commit();
-		
+		return "{\"message\"; \"account successfully deleted\"}";
 		
 	}
+	
+	public void setManager(EntityManager em) {
+		this.em = em;
+	} 
 }
