@@ -1,25 +1,35 @@
 package com.qa.service;
 
-import java.util.List;
-
+import javax.enterprise.inject.Default;
+import javax.inject.Inject;
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import static javax.transaction.Transactional.TxType.REQUIRED;
 import static javax.transaction.Transactional.TxType.SUPPORTS;
+
+import java.util.Collection;
+import java.util.List;
+
 import com.qa.domain.Account;
 import com.qa.util.JSONUtil;
 
+@Default
 @Transactional(SUPPORTS)
 public class DatabaseService {
 	
 	@PersistenceContext(unitName = "primary")
 	private EntityManager em;
+	
+	@Inject
+	private JSONUtil jUtil;
 
-	public List <Account> getAllAccounts() { 
+
+	public String getAllAccounts() { 
 		
-		TypedQuery<Account> query = em.createQuery("SELECT a FROM ACCOUNT a", Account.class);
-		
-		return query.getResultList();
+		Query query = em.createQuery("SELECT a FROM ACCOUNT a");
+		Collection<Account> account = (Collection<Account>) query.getResultList();
+		String result = jUtil.getJSONForObject(account);
+		return result;
 	}
 	
 	public Account findAccount(String accountNumber) {
@@ -28,40 +38,50 @@ public class DatabaseService {
 	}
 	
 	@Transactional(REQUIRED)
-	public Account getAccount (Account account) {
+	public String getAccount (Account account) {
 		
 		em.persist(account);
 		
-		return account;
+		return "{\"message\"; \"account successfully added\"}";
 		
 	}
 	
 	@Transactional(REQUIRED)
-	public Account updateAccount (String accountNumber, String NewJSON) {
+	public String updateAccount (String accountNumber, String NewJSON) {
 		
-		JSONUtil jUtil = new JSONUtil();	
-		
-		em.getTransaction().begin();
-		Account oldrecord = em.find(Account.class, accountNumber);
 		Account newrecord = jUtil.getObjectForJSON(NewJSON, Account.class);
+		Account oldrecord = findAccount(accountNumber);
 		
-		if (oldrecord !=null) {
+		
+		if (NewJSON !=null) {
 			
-			em.merge(newrecord);
+			oldrecord = newrecord;
+			em.merge(oldrecord);
 		}
-		em.getTransaction().commit();
-		
-		return newrecord;		
+				
+		return "{\"message\"; \"account successfully updated\"}";		
 		
 	}
 	
 	@Transactional(REQUIRED)
-	public void deleteAccount(Account account) {
+	public String deleteAccount(String accountNumber) {
 		
-		em.getTransaction().begin();
-		em.remove(account);
-		em.getTransaction().commit();
+		Account account = findAccount(accountNumber);
 		
+		if (account !=null) {
+			
+			em.remove(account);
+		}
 		
+		return "{\"message\"; \"account successfully deleted\"}";
+		
+	}
+	
+	public void setManager(EntityManager em) {
+		this.em = em;
+	} 
+	
+	public void setUtil(JSONUtil jUtil) {
+		this.jUtil = jUtil;
 	}
 }
