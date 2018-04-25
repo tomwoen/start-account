@@ -1,35 +1,59 @@
 package com.qa.service;
 
-import javax.persistence.EntityManager;
+import static org.junit.Assert.assertEquals;
+
+import javax.enterprise.inject.Alternative;
+
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+import com.qa.util.JSONUtil;
+
+@Alternative
 public class MapServiceTest {
 	
-	@InjectMocks
 	private MapService mapService;
-	
-	@Mock
-	private EntityManager em;
+	private String mock = "{\"firstName\":\"Bill\",\"secondName\":\"Boe\",\"accountNumber\":\"1235\"}";
+	private String mockupdate = "{\"firstName\":\"Bill\",\"secondName\":\"Bow\",\"accountNumber\":\"1235\"}";
+	private JSONUtil util;
 	
 	@Before
 	public void setUp() {
 		
-		mapService.setManager(em);
+		util = new JSONUtil();
+		mapService = new MapService();
+		mapService.setUtil(util);
 		
+	} 
+	
+	@Test
+	public void testDeleteAccount() {
+		String actualValue = mapService.deleteAccount(1);
+		String expectedValue = "{\"message\"; \"account successfully deleted\"}";
+		assertEquals(expectedValue, actualValue);
 	}
 	
 	@Test
-	public void testaddAccount() {
-		
-		String actual = mapService.addAccount();
-		
+	public void testAddAccount() {
+		String actualValue = mapService.addAccount(mock);
+		String expectedValue = "{\"message\"; \"account successfully added\"}";
+		assertEquals(expectedValue, actualValue);
 	}
-
+	
+	@Test
+	public void testUpdateAccount() {
+		String actualValue = mapService.updateAccount(1, mockupdate);
+		String expectedValue = "{\"message\"; \"account successfully updated\"}";
+		assertEquals(expectedValue, actualValue);
+	}
+	
+	@Test
+	public void testGetAllAccounts() {
+		
+		mapService.initAccountMap();
+		String expected = "{\"1\":{\"firstName\":\"Bill\",\"secondName\":\"Boe\",\"accountNumber\":\"1235\"}}";
+		assertEquals(expected, mapService.getAllAccounts());
+	}
+	
 }
