@@ -12,6 +12,7 @@ public class BlockAccountTest {
 	public void testBlocked() {
 		String actual = blockAccount.Blocked("9999");
 		String expected = "{\"message\": \"This account is blocked\"}";
+		assertEquals(expected,actual);
 
 	}
 
