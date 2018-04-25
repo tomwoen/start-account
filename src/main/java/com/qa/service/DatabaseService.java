@@ -21,11 +21,12 @@ public class DatabaseService {
 	private EntityManager em;
 	
 	@Inject
-	JSONUtil jUtil;
+	private JSONUtil jUtil;
+
 
 	public String getAllAccounts() { 
 		
-		Query query = em.createQuery("SELECT a FROM ACCOUNT a", Account.class);
+		Query query = em.createQuery("SELECT a FROM ACCOUNT a");
 		Collection<Account> account = (Collection<Account>) query.getResultList();
 		String result = jUtil.getJSONForObject(account);
 		return result;
@@ -48,26 +49,30 @@ public class DatabaseService {
 	@Transactional(REQUIRED)
 	public String updateAccount (String accountNumber, String NewJSON) {
 		
-		em.getTransaction().begin();
-		Account oldrecord = em.find(Account.class, accountNumber);
 		Account newrecord = jUtil.getObjectForJSON(NewJSON, Account.class);
+		Account oldrecord = findAccount(accountNumber);
 		
-		if (oldrecord !=null) {
+		
+		if (NewJSON !=null) {
 			
-			em.merge(newrecord);
+			oldrecord = newrecord;
+			em.merge(oldrecord);
 		}
-		em.getTransaction().commit();
-		
+				
 		return "{\"message\"; \"account successfully updated\"}";		
 		
 	}
 	
 	@Transactional(REQUIRED)
-	public String deleteAccount(Account account) {
+	public String deleteAccount(String accountNumber) {
 		
-		em.getTransaction().begin();
-		em.remove(account);
-		em.getTransaction().commit();
+		Account account = findAccount(accountNumber);
+		
+		if (account !=null) {
+			
+			em.remove(account);
+		}
+		
 		return "{\"message\"; \"account successfully deleted\"}";
 		
 	}
@@ -75,4 +80,8 @@ public class DatabaseService {
 	public void setManager(EntityManager em) {
 		this.em = em;
 	} 
+	
+	public void setUtil(JSONUtil jUtil) {
+		this.jUtil = jUtil;
+	}
 }
