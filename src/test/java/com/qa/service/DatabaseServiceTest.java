@@ -51,7 +51,7 @@ public class DatabaseServiceTest {
 	
 	@Test
 	public void testGetAccount() {
-		String actualValue = databaseService.getAccount(account1);
+		String actualValue = databaseService.addAccount(account1);
 		String expectedValue = "{\"message\"; \"account successfully added\"}";
 		assertEquals(expectedValue, actualValue);
 	}

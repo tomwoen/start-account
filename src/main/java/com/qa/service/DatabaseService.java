@@ -38,7 +38,7 @@ public class DatabaseService {
 	}
 	
 	@Transactional(REQUIRED)
-	public String getAccount (Account account) {
+	public String addAccount (Account account) {
 		
 		em.persist(account);
 		
